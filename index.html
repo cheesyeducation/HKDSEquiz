@@ -769,5 +769,177 @@ ${strictnessLevel}
             }
             
             // Timer functions
-           
+                        // Timer functions
+                        function startTimer() {
+                startTime = Date.now();
+                quizTimer = setInterval(updateTimer, 1000);
+            }
+
+            function updateTimer() {
+                const elapsed = Date.now() - startTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                document.getElementById('quizTimer').querySelector('span').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            function stopTimer() {
+                clearInterval(quizTimer);
+            }
+            
+            // Handle next button click
+            function handleNextButtonClick() {
+                const currentIndex = quizData.currentQuestionIndex;
+                
+                // If this is the last question, finish the quiz
+                if (currentIndex === quizData.questions.length - 1) {
+                    finishQuiz();
+                } else {
+                    // Otherwise, show the next question
+                    showQuestion(currentIndex + 1);
+                }
+            }
+            
+            // Finish the quiz and show results
+            function finishQuiz() {
+                // Stop timer
+                stopTimer();
+                
+                // Calculate score
+                let correctCount = 0;
+                quizData.incorrectQuestionIndices = [];
+                
+                quizData.questions.forEach((question, index) => {
+                    const userAnswer = quizData.userAnswers[index];
+                    const correctAnswer = question.correctAnswer;
+                    
+                    let isCorrect = false;
+                    if (question.questionType === 'multiple-choice') {
+                        isCorrect = userAnswer === correctAnswer;
+                    } else {
+                        isCorrect = userAnswer.toLowerCase().includes(correctAnswer.toLowerCase());
+                    }
+                    
+                    if (isCorrect) {
+                        correctCount++;
+                    } else {
+                        quizData.incorrectQuestionIndices.push(index);
+                    }
+                });
+                
+                // Update score display
+                scoreDisplay.textContent = `${correctCount}/${quizData.questions.length}`;
+                const scorePercentage = (correctCount / quizData.questions.length) * 100;
+                scoreBar.style.width = `${scorePercentage}%`;
+                
+                // Update incorrect questions list
+                incorrectQuestions.innerHTML = '';
+                
+                if (quizData.incorrectQuestionIndices.length === 0) {
+                    incorrectQuestions.innerHTML = '<p class="text-green-600 dark:text-green-400">全部正確！做得很好！</p>';
+                    reviewIncorrectButton.disabled = true;
+                    reviewIncorrectButton.classList.add('opacity-50');
+                } else {
+                    reviewIncorrectButton.disabled = false;
+                    reviewIncorrectButton.classList.remove('opacity-50');
+                    
+                    quizData.incorrectQuestionIndices.forEach(index => {
+                        const question = quizData.questions[index];
+                        const listItem = document.createElement('div');
+                        listItem.className = 'p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 rounded-md';
+                        
+                        listItem.innerHTML = `
+                            <p class="font-medium mb-1">問題 ${index + 1}: ${question.questionText}</p>
+                            <p class="text-sm mb-1"><span class="font-medium">你的答案:</span> ${quizData.userAnswers[index] || '未回答'}</p>
+                            <p class="text-sm text-green-600 dark:text-green-400"><span class="font-medium">正確答案:</span> ${question.correctAnswer}</p>
+                            <p class="text-sm mt-2"><span class="font-medium">解釋:</span> ${question.explanation}</p>
+                        `;
+                        
+                        incorrectQuestions.appendChild(listItem);
+                    });
+                }
+                
+                // Show results section
+                quizSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+            }
+            
+            // Restart the quiz
+            function restartQuiz() {
+                // Reset user answers
+                quizData.userAnswers = new Array(quizData.questions.length).fill(null);
+                quizData.currentQuestionIndex = 0;
+                quizData.incorrectQuestionIndices = [];
+                
+                // Reset timer
+                stopTimer();
+                startTimer();
+                
+                // Show first question
+                showQuestion(0);
+                
+                // Hide results, show quiz
+                resultsSection.classList.add('hidden');
+                quizSection.classList.remove('hidden');
+            }
+            
+            // Review incorrect answers
+            function reviewIncorrectAnswers() {
+                if (quizData.incorrectQuestionIndices.length === 0) return;
+                
+                // Reset timer
+                stopTimer();
+                startTimer();
+                
+                // Show the first incorrect question
+                quizData.currentQuestionIndex = quizData.incorrectQuestionIndices[0];
+                showQuestion(quizData.currentQuestionIndex);
+                
+                // Hide results, show quiz
+                resultsSection.classList.add('hidden');
+                quizSection.classList.remove('hidden');
+            }
+            
+            // Reset to input section for a new quiz
+            function resetToInputSection() {
+                // Clear quiz data
+                quizData = {
+                    questions: [],
+                    originalQuestions: [],
+                    questionOrder: [],
+                    currentQuestionIndex: 0,
+                    userAnswers: [],
+                    incorrectQuestionIndices: []
+                };
+                
+                // Stop timer
+                stopTimer();
+                
+                // Hide results, show input
+                resultsSection.classList.add('hidden');
+                quizSection.classList.add('hidden');
+                inputSection.classList.remove('hidden');
+            }
+        });
+    </script>
+
+    <!-- Add these scripts right before closing body tag -->
+    <script src="https://cdn.jsdelivr.net/npm/@poe-ai/poe-api@latest/dist/poe.min.js"></script>
+    <script>
+        // Initialize Poe API
+        window.Poe = window.Poe || {};
+        window.Poe.init = function() {
+            console.log("Poe API ready");
+            
+            // Add check for Poe extension
+            document.getElementById('generateButton').addEventListener('click', function() {
+                if (typeof window.Poe.sendUserMessage === 'undefined') {
+                    alert('請先安裝Poe瀏覽器擴展並登入\n將在新標籤頁打開Poe官網');
+                    window.open('https://poe.com/', '_blank');
+                    return false;
+                }
+            });
+        };
+    </script>
+</body>
 </html>
