@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE 材料生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        'primary-dark': '#4A49B0',
+                        'primary-light': '#7A79E6',
+                    }
+                }
+            }
+        }
+        
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen p-4">
+    <div class="container mx-auto max-w-3xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-primary dark:text-primary-light mb-2">HKDSE 材料生成器</h1>
+            <p class="text-gray-600 dark:text-gray-400">香港中學文憑考試學習材料生成工具</p>
+        </header>
+
+        <div id="mainContainer">
+            <!-- Input Section -->
+            <div id="inputSection" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4">生成測驗</h2>
+                <div class="mb-4">
+                    <label for="topicInput" class="block text-sm font-medium mb-1">主題或學習領域</label>
+                    <input type="text" id="topicInput" placeholder="例如：二次方程、辛亥革命、細胞分裂等" 
+                           class="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-base dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">年級</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="difficulty" value="form1" class="form-radio text-primary">
+                            <span class="ml-2">中一</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="difficulty" value="form2" class="form-radio text-primary">
+                            <span class="ml-2">中二</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="difficulty" value="form3" class="form-radio text-primary">
+                            <span class="ml-2">中三</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="difficulty" value="form4" class="form-radio text-primary" checked>
+                            <span class="ml-2">中四</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="difficulty" value="form5" class="form-radio text-primary">
+                            <span class="ml-2">中五</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="difficulty" value="form6" class="form-radio text-primary">
+                            <span class="ml-2">中六</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="questionCount" class="block text-sm font-medium mb-1">題目數量</label>
+                        <input type="number" id="questionCount" min="1" max="20" value="10" 
+                               class="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-base dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:border-transparent">
+                    </div>
+                    <div>
+                        <label for="gradeThreshold" class="block text-sm font-medium mb-1">評分嚴格度</label>
+                        <select id="gradeThreshold" class="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-base dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:border-transparent">
+                            <option value="strict">嚴格 - 答案需大部分準確</option>
+                            <option value="moderate" selected>中等 - 合理準確即可</option>
+                            <option value="lenient">寬鬆 - 主要概念正確即可</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">布魯姆分類法等級</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="bloomLevel" value="記憶" class="form-checkbox text-primary" checked>
+                            <span class="ml-2">記憶</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="bloomLevel" value="理解" class="form-checkbox text-primary" checked>
+                            <span class="ml-2">理解</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="bloomLevel" value="應用" class="form-checkbox text-primary" checked>
+                            <span class="ml-2">應用</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="bloomLevel" value="分析" class="form-checkbox text-primary" checked>
+                            <span class="ml-2">分析</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="bloomLevel" value="評鑑" class="form-checkbox text-primary" checked>
+                            <span class="ml-2">評鑑</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="bloomLevel" value="創造" class="form-checkbox text-primary" checked>
+                            <span class="ml-2">創造</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="additionalInstructions" class="block text-sm font-medium mb-1">附加要求 (選填)</label>
+                    <textarea id="additionalInstructions" rows="3" placeholder="例如：重點考核圖表分析、需要包含2018-2023年HKDSE題型等"
+                              class="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-base dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:border-transparent"></textarea>
+                </div>
+                
+                <div class="flex flex-wrap gap-4 mb-4">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="shuffleQuestions" class="form-checkbox text-primary" checked>
+                        <span class="ml-2">隨機排序題目</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="useAIGrading" class="form-checkbox text-primary" checked>
+                        <span class="ml-2">使用AI評分簡答題</span>
+                    </label>
+                </div>
+                <button id="generateButton" class="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center">
+                    <span>生成測驗</span>
+                </button>
+            </div>
+            
+            <!-- Loading Section -->
+            <div id="loadingSection" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p class="text-lg">正在生成測驗...</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">預計需要1-2分鐘</p>
+            </div>
+            
+            <!-- Quiz Section (initially hidden) -->
+            <div id="quizSection" class="hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold" id="quizTitle">測驗標題</h2>
+                        <div class="flex items-center gap-4">
+                            <span class="px-3 py-1 bg-primary-light/20 text-primary-dark dark:text-primary-light rounded-full text-sm" id="progressIndicator">問題 0/0</span>
+                            <span id="quizTimer" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm">
+                                時間: <span>00:00</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Question Container -->
+                    <div id="questionContainer" class="mb-6">
+                        <!-- Questions will be dynamically inserted here -->
+                    </div>
+                    
+                    <!-- Feedback Section (initially hidden) -->
+                    <div id="feedbackContainer" class="hidden mb-6 p-4 rounded-md">
+                        <div class="flex items-start gap-3">
+                            <div id="feedbackIcon" class="flex-shrink-0 w-6 h-6"></div>
+                            <div class="flex-1">
+                                <p id="feedbackText" class="font-medium mb-1"></p>
+                                <div id="feedbackExplanation" class="text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between">
+                        <button id="prevButton" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 disabled:opacity-50">上一題</button>
+                        <div class="flex gap-2">
+                            <button id="checkAnswerButton" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-md transition-colors duration-200">檢查答案</button>
+                            <button id="nextButton" class="px-4 py-2 bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400 rounded-md transition-colors duration-200 hidden">下一題</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Section (initially hidden) -->
+            <div id="resultsSection" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4">測驗結果</h2>
+                <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium">你的分數:</span>
+                        <span id="scoreDisplay" class="text-xl font-bold text-primary dark:text-primary-light">0/0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-4">
+                        <div id="scoreBar" class="bg-primary h-4 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div id="incorrectQuestionsContainer" class="mb-6">
+                    <h3 class="font-medium mb-2">需要複習的問題</h3>
+                    <div id="incorrectQuestions" class="space-y-3">
+                        <!-- Incorrect questions will be listed here -->
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    <button id="restartQuizButton" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-md transition-colors duration-200">重新測驗</button>
+                    <button id="reviewIncorrectButton" class="px-4 py-2 border border-primary text-primary dark:border-primary-light dark:text-primary-light rounded-md hover:bg-primary/10 transition-colors duration-200">複習錯誤答案</button>
+                    <button id="newQuizButton" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">創建新測驗</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elements
+            const inputSection = document.getElementById('inputSection');
+            const loadingSection = document.getElementById('loadingSection');
+            const quizSection = document.getElementById('quizSection');
+            const resultsSection = document.getElementById('resultsSection');
+            const generateButton = document.getElementById('generateButton');
+            const topicInput = document.getElementById('topicInput');
+            const additionalInstructions = document.getElementById('additionalInstructions');
+            const questionContainer = document.getElementById('questionContainer');
+            const quizTitle = document.getElementById('quizTitle');
+            const progressIndicator = document.getElementById('progressIndicator');
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const scoreBar = document.getElementById('scoreBar');
+            const incorrectQuestions = document.getElementById('incorrectQuestions');
+            const restartQuizButton = document.getElementById('restartQuizButton');
+            const reviewIncorrectButton = document.getElementById('reviewIncorrectButton');
+            const newQuizButton = document.getElementById('newQuizButton');
+            
+            // Quiz state
+            let quizData = {
+                questions: [],
+                originalQuestions: [], // Store original question order
+                questionOrder: [],     // To map shuffled index to original index
+                currentQuestionIndex: 0,
+                userAnswers: [],
+                incorrectQuestionIndices: []
+            };
+
+            // Timer variables
+            let quizTimer;
+            let startTime;
+            
+            // Event listeners
+            generateButton.addEventListener('click', generateQuiz);
+            prevButton.addEventListener('click', showPreviousQuestion);
+            nextButton.addEventListener('click', handleNextButtonClick);
+            document.getElementById('checkAnswerButton').addEventListener('click', checkAnswer);
+            restartQuizButton.addEventListener('click', restartQuiz);
+            reviewIncorrectButton.addEventListener('click', reviewIncorrectAnswers);
+            newQuizButton.addEventListener('click', resetToInputSection);
+            
+            // Function to get selected difficulty
+            function getSelectedDifficulty() {
+                const difficultyElements = document.getElementsByName('difficulty');
+                for (let elem of difficultyElements) {
+                    if (elem.checked) {
+                        return elem.value;
+                    }
+                }
+                return 'form4'; // Default to Form 4
+            }
+            
+            // Generate quiz
+            async function generateQuiz() {
+                const topic = topicInput.value.trim();
+                if (!topic) {
+                    alert('請輸入主題或學習領域');
+                    return;
+                }
+                
+                // Check if at least one Bloom's level is selected
+                const selectedBloomLevels = Array.from(document.getElementsByName('bloomLevel'))
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                
+                if (selectedBloomLevels.length === 0) {
+                    alert('請至少選擇一個布魯姆分類法等級');
+                    return;
+                }
+                
+                // Get number of questions
+                const questionCount = parseInt(document.getElementById('questionCount').value);
+                if (isNaN(questionCount) || questionCount < 1 || questionCount > 20) {
+                    alert('請輸入有效的題目數量 (1-20)');
+                    return;
+                }
+                
+                // Show loading state
+                inputSection.classList.add('hidden');
+                loadingSection.classList.remove('hidden');
+                
+                try {
+                    const difficulty = getSelectedDifficulty();
+                    const additional = additionalInstructions.value.trim();
+                    
+                    // Always use DeepSeek
+                    const botToUse = '@DeepSeek';
+                    
+                    const formLevels = {
+                        form1: "中一程度",
+                        form2: "中二程度", 
+                        form3: "中三程度",
+                        form4: "中四程度（HKDSE基礎）",
+                        form5: "中五程度（HKDSE進階）",
+                        form6: "中六程度（HKDSE考試水平）"
+                    };
+                    
+                    // Create prompt for quiz generation
+                    let prompt = `${botToUse} 根據以下要求生成HKDSE相關測驗問題:
+                    
+主題: "${topic}"
+年級: ${formLevels[difficulty]}
+題目數量: ${questionCount}
+布魯姆分類法等級: ${selectedBloomLevels.join(', ')}
+
+請注意:
+1. 題目需符合香港中學文憑考試(HKDSE)的標準和格式
+2. 中四至中六題目應參考HKDSE公開試題型
+3. 中一至中三題目應為HKDSE打好基礎
+
+請嚴格返回以下JSON格式:
+{
+  "title": "測驗標題",
+  "questions": [
+    {
+      "id": 1,
+      "bloomLevel": "記憶",
+      "questionText": "問題內容",
+      "questionType": "multiple-choice",
+      "options": ["選項A", "選項B", "選項C", "選項D"],
+      "correctAnswer": "正確選項",
+      "explanation": "答案解釋（需詳細說明）"
+    }
+  ]
+}`;
+
+                    if (additional) {
+                        prompt += `\n\n附加要求: ${additional}`;
+                    }
+                    
+                    // Register handler for DeepSeek's response
+                    window.Poe.registerHandler("quiz-handler", (result, context) => {
+                        if (result.status === "error") {
+                            loadingSection.classList.add('hidden');
+                            inputSection.classList.remove('hidden');
+                            alert("生成測驗時出錯: " + result.statusText);
+                            return;
+                        }
+                        
+                        const msg = result.responses[0];
+                        
+                        if (msg.status === "complete") {
+                            try {
+                                // Parse the JSON response from DeepSeek
+                                let cleanedContent = msg.content;
+                                // In case DeepSeek adds any markdown formatting, try to extract just the JSON
+                                if (cleanedContent.includes('```json')) {
+                                    cleanedContent = cleanedContent.split('```json')[1].split('```')[0].trim();
+                                } else if (cleanedContent.includes('```')) {
+                                    cleanedContent = cleanedContent.split('```')[1].split('```')[0].trim();
+                                }
+                                
+                                const quizContent = JSON.parse(cleanedContent);
+                                
+                                // Store original questions
+                                quizData.originalQuestions = [...quizContent.questions];
+                                quizData.currentQuestionIndex = 0;
+                                quizData.userAnswers = new Array(quizContent.questions.length).fill(null);
+                                quizData.incorrectQuestionIndices = [];
+                                
+                                // Check if we should shuffle the questions
+                                const shuffleQuestions = document.getElementById('shuffleQuestions').checked;
+                                if (shuffleQuestions) {
+                                    // Create an array to map shuffled indices to original indices
+                                    quizData.questionOrder = Array.from({ length: quizContent.questions.length }, (_, i) => i);
+                                    
+                                    // Shuffle the questions using Fisher-Yates algorithm
+                                    quizData.questions = [...quizContent.questions]; // Make a copy
+                                    for (let i = quizData.questions.length - 1; i > 0; i--) {
+                                        const j = Math.floor(Math.random() * (i + 1));
+                                        // Swap questions
+                                        [quizData.questions[i], quizData.questions[j]] = 
+                                        [quizData.questions[j], quizData.questions[i]];
+                                        // Keep track of the original position
+                                        [quizData.questionOrder[i], quizData.questionOrder[j]] = 
+                                        [quizData.questionOrder[j], quizData.questionOrder[i]];
+                                    }
+                                } else {
+                                    // No shuffling needed
+                                    quizData.questions = [...quizContent.questions];
+                                    quizData.questionOrder = Array.from({ length: quizContent.questions.length }, (_, i) => i);
+                                }
+                                
+                                // Set quiz title
+                                quizTitle.textContent = quizContent.title;
+                                
+                                // Show first question
+                                showQuestion(0);
+                                
+                                // Start timer
+                                startTimer();
+                                
+                                // Hide loading, show quiz
+                                loadingSection.classList.add('hidden');
+                                quizSection.classList.remove('hidden');
+                            } catch (error) {
+                                console.error("解析測驗數據時出錯:", error);
+                                console.log("原始內容:", msg.content);
+                                loadingSection.classList.add('hidden');
+                                inputSection.classList.remove('hidden');
+                                alert("創建測驗時出錯，請重試。");
+                            }
+                        }
+                    });
+                    
+                    // Send request to DeepSeek
+                    await window.Poe.sendUserMessage(prompt, {
+                        handler: "quiz-handler",
+                        stream: false,
+                        openChat: false
+                    });
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    loadingSection.classList.add('hidden');
+                    inputSection.classList.remove('hidden');
+                    alert("發生錯誤，請重試。");
+                }
+            }
+            
+            // Show a specific question
+            function showQuestion(index) {
+                if (index < 0 || index >= quizData.questions.length) return;
+                
+                quizData.currentQuestionIndex = index;
+                const question = quizData.questions[index];
+                
+                // Update progress indicator
+                progressIndicator.textContent = `問題 ${index + 1}/${quizData.questions.length}`;
+                
+                // Clear previous question and hide feedback
+                questionContainer.innerHTML = '';
+                document.getElementById('feedbackContainer').classList.add('hidden');
+                
+                // Show check answer button, hide next button
+                document.getElementById('checkAnswerButton').classList.remove('hidden');
+                document.getElementById('nextButton').classList.add('hidden');
+                
+                // Create question element
+                const questionElement = document.createElement('div');
+                questionElement.className = 'mb-4';
+                
+                // Question text with Bloom's level tag
+                questionElement.innerHTML = `
+                    <div class="flex flex-wrap items-start gap-2 mb-3">
+                        <span class="px-2 py-1 bg-primary/10 text-primary dark:text-primary-light rounded text-xs font-medium">${question.bloomLevel}</span>
+                        <h3 class="text-lg font-medium flex-1">${question.questionText}</h3>
+                    </div>
+                `;
+                
+                // Create answer section based on question type
+                if (question.questionType === 'multiple-choice') {
+                    const optionsElement = document.createElement('div');
+                    optionsElement.className = 'space-y-2';
+                    
+                    question.options.forEach((option, optionIndex) => {
+                        const isSelected = quizData.userAnswers[index] === option;
+                        
+                        const optionElement = document.createElement('label');
+                        optionElement.className = `flex items-start p-3 border rounded-md cursor-pointer transition-colors ${
+                            isSelected 
+                                ? 'bg-primary/10 border-primary dark:border-primary-light' 
+                                : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`;
+                        
+                        optionElement.innerHTML = `
+                            <input type="radio" name="q${index}" value="${optionIndex}" class="mt-1 text-primary" ${isSelected ? 'checked' : ''}>
+                            <span class="ml-2">${option}</span>
+                        `;
+                        
+                        // Add event listener to save answer
+                        optionElement.querySelector('input').addEventListener('change', (e) => {
+                            quizData.userAnswers[index] = question.options[optionIndex];
+                        });
+                        
+                        optionsElement.appendChild(optionElement);
+                    });
+                    
+                    questionElement.appendChild(optionsElement);
+                    
+                } else if (question.questionType === 'short-answer') {
+                    const answerElement = document.createElement('div');
+                    answerElement.className = 'mt-2';
+                    
+                    const textInput = document.createElement('textarea');
+                    textInput.className = 'w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-base dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:border-transparent';
+                    textInput.rows = 3;
+                    textInput.placeholder = '在此輸入你的答案...';
+                    textInput.value = quizData.userAnswers[index] || '';
+                    
+                    // Save answer on input
+                    textInput.addEventListener('input', (e) => {
+                        quizData.userAnswers[index] = e.target.value;
+                    });
+                    
+                    answerElement.appendChild(textInput);
+                    questionElement.appendChild(answerElement);
+                }
+                
+                questionContainer.appendChild(questionElement);
+                
+                // Update navigation buttons
+                prevButton.disabled = index === 0;
+                if (index === quizData.questions.length - 1) {
+                    nextButton.textContent = '完成測驗';
+                } else {
+                    nextButton.textContent = '下一題';
+                }
+            }
+            
+            // Show previous question
+            function showPreviousQuestion() {
+                if (quizData.currentQuestionIndex > 0) {
+                    showQuestion(quizData.currentQuestionIndex - 1);
+                }
+            }
+            
+            // Check the current answer and provide feedback
+            async function checkAnswer() {
+                const currentIndex = quizData.currentQuestionIndex;
+                const question = quizData.questions[currentIndex];
+                const userAnswer = quizData.userAnswers[currentIndex];
+                
+                // If no answer is provided, remind the user
+                if (userAnswer === null || userAnswer === '') {
+                    alert('請回答問題後再檢查。');
+                    return;
+                }
+                
+                // Get feedback elements
+                const feedbackContainer = document.getElementById('feedbackContainer');
+                const feedbackIcon = document.getElementById('feedbackIcon');
+                const feedbackText = document.getElementById('feedbackText');
+                const feedbackExplanation = document.getElementById('feedbackExplanation');
+                
+                // Show loading state in the feedback container
+                feedbackContainer.className = 'mb-6 p-4 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
+                feedbackIcon.innerHTML = '<div class="animate-spin h-6 w-6 border-2 border-gray-500 rounded-full border-t-transparent"></div>';
+                feedbackText.textContent = '正在評估你的答案...';
+                feedbackExplanation.innerHTML = '';
+                feedbackContainer.classList.remove('hidden');
+                
+                // Disable buttons during evaluation
+                document.getElementById('checkAnswerButton').disabled = true;
+                document.getElementById('prevButton').disabled = true;
+                
+                try {
+                    let isCorrect = false;
+                    let aiEvaluation = '';
+                    
+                    // For multiple-choice questions, use simple matching
+                    if (question.questionType === 'multiple-choice') {
+                        isCorrect = userAnswer === question.correctAnswer;
+                    } 
+                    // For short-answer questions, use AI evaluation if enabled
+                    else if (document.getElementById('useAIGrading').checked) {
+                        // Get the grading threshold
+                        const threshold = document.getElementById('gradeThreshold').value;
+                        
+                        // Use DeepSeek to evaluate the short answer
+                        const { success, result } = await evaluateShortAnswer(
+                            question.questionText,
+                            question.correctAnswer,
+                            userAnswer,
+                            threshold,
+                            question.explanation
+                        );
+                        
+                        if (success) {
+                            isCorrect = result.isCorrect;
+                            aiEvaluation = result.explanation;
+                        } else {
+                            // Fallback to basic check if AI evaluation fails
+                            isCorrect = userAnswer.toLowerCase().includes(question.correctAnswer.toLowerCase());
+                        }
+                    } 
+                    // Fallback to basic keyword matching
+                    else {
+                        isCorrect = userAnswer.toLowerCase().includes(question.correctAnswer.toLowerCase());
+                    }
+                    
+                    // Update feedback UI
+                    if (isCorrect) {
+                        feedbackContainer.className = 'mb-6 p-4 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30';
+                        feedbackIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+                        feedbackText.textContent = '正確！';
+                    } else {
+                        feedbackContainer.className = 'mb-6 p-4 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30';
+                        feedbackIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
+                        feedbackText.textContent = '錯誤';
+                        
+                        // For incorrect answers, add to the list to review later
+                        if (!quizData.incorrectQuestionIndices.includes(currentIndex)) {
+                            quizData.incorrectQuestionIndices.push(currentIndex);
+                        }
+                    }
+                    
+                    // Add explanation
+                    let explanationHTML = '';
+                    
+                    // For short answer questions with AI evaluation
+                    if (question.questionType === 'short-answer' && document.getElementById('useAIGrading').checked && aiEvaluation) {
+                        explanationHTML += `<p class="mb-2"><span class="font-medium">評估:</span> ${aiEvaluation}</p>`;
+                        explanationHTML += `<p class="mb-2"><span class="font-medium">正確答案:</span> ${question.correctAnswer}</p>`;
+                        explanationHTML += `<p><span class="font-medium">解釋:</span> ${question.explanation}</p>`;
+                    }
+                    // For other questions or fallback
+                    else {
+                        if (!isCorrect) {
+                            explanationHTML += `<p class="mb-2"><span class="font-medium">正確答案:</span> ${question.correctAnswer}</p>`;
+                        }
+                        explanationHTML += `<p><span class="font-medium">解釋:</span> ${question.explanation}</p>`;
+                    }
+                    
+                    feedbackExplanation.innerHTML = explanationHTML;
+                } catch (error) {
+                    console.error("評估答案時出錯:", error);
+                    
+                    // Fallback to basic checking
+                    const isCorrect = question.questionType === 'multiple-choice' 
+                        ? userAnswer === question.correctAnswer
+                        : userAnswer.toLowerCase().includes(question.correctAnswer.toLowerCase());
+                    
+                    // Update feedback UI
+                    if (isCorrect) {
+                        feedbackContainer.className = 'mb-6 p-4 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30';
+                        feedbackIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+                        feedbackText.textContent = '正確！';
+                    } else {
+                        feedbackContainer.className = 'mb-6 p-4 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30';
+                        feedbackIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
+                        feedbackText.textContent = '錯誤';
+                        
+                        if (!quizData.incorrectQuestionIndices.includes(currentIndex)) {
+                            quizData.incorrectQuestionIndices.push(currentIndex);
+                        }
+                    }
+                    
+                    // Add explanation with correct answer
+                    let explanationHTML = '';
+                    if (!isCorrect) {
+                        explanationHTML += `<p class="mb-2"><span class="font-medium">正確答案:</span> ${question.correctAnswer}</p>`;
+                    }
+                    explanationHTML += `<p><span class="font-medium">解釋:</span> ${question.explanation}</p>`;
+                    feedbackExplanation.innerHTML = explanationHTML;
+                } finally {
+                    // Re-enable buttons
+                    document.getElementById('checkAnswerButton').disabled = false;
+                    document.getElementById('prevButton').disabled = currentIndex === 0;
+                    
+                    // Hide check answer button, show next button
+                    document.getElementById('checkAnswerButton').classList.add('hidden');
+                    document.getElementById('nextButton').classList.remove('hidden');
+                }
+            }
+            
+            // Evaluate a short answer using DeepSeek
+            async function evaluateShortAnswer(question, correctAnswer, userAnswer, threshold, explanation) {
+                try {
+                    // Create a random handler ID
+                    const handlerId = `short-answer-eval-${Date.now()}`;
+                    
+                    // Return promise that resolves when the handler is called
+                    return new Promise((resolve, reject) => {
+                        // Register handler for DeepSeek's response
+                        window.Poe.registerHandler(handlerId, (result) => {
+                            if (result.status === "error") {
+                                reject(new Error("評估答案時出錯: " + result.statusText));
+                                return;
+                            }
+                            
+                            const msg = result.responses[0];
+                            
+                            if (msg.status === "complete") {
+                                try {
+                                    // Parse the JSON response
+                                    let cleanedContent = msg.content;
+                                    
+                                    // In case DeepSeek adds any markdown formatting, try to extract just the JSON
+                                    if (cleanedContent.includes('```json')) {
+                                        cleanedContent = cleanedContent.split('```json')[1].split('```')[0].trim();
+                                    } else if (cleanedContent.includes('```')) {
+                                        cleanedContent = cleanedContent.split('```')[1].split('```')[0].trim();
+                                    }
+                                    
+                                    const evaluationResult = JSON.parse(cleanedContent);
+                                    resolve({ success: true, result: evaluationResult });
+                                } catch (error) {
+                                    console.error("解析評估結果時出錯:", error);
+                                    console.log("原始內容:", msg.content);
+                                    reject(new Error("解析評估結果時出錯"));
+                                }
+                            }
+                        });
+                        
+                        // Always use DeepSeek for evaluation
+                        const botToUse = '@DeepSeek';
+                        
+                        // Determine grading strictness
+                        let strictnessLevel;
+                        switch (threshold) {
+                            case 'strict':
+                                strictnessLevel = "嚴格評分。答案應該大部分準確。";
+                                break;
+                            case 'lenient':
+                                strictnessLevel = "寬鬆評分。如果主要概念存在，即使有小錯誤也可視為正確。";
+                                break;
+                            case 'moderate':
+                            default:
+                                strictnessLevel = "適中評分。答案應合理準確，但允許措辭或細節略有差異。";
+                        }
+                        
+                        const prompt = `${botToUse} 評估學生的簡答題回答。
+
+問題: "${question}"
+正確答案: "${correctAnswer}"
+學生回答: "${userAnswer}"
+${explanation ? `正確答案解釋: "${explanation}"` : ''}
+
+${strictnessLevel}
+
+請評估學生的答案是否正確。僅返回以下JSON格式:
+{
+  "isCorrect": true/false,
+  "explanation": "簡要解釋為什麼答案正確或不正確"
+}`;
+                        
+                        window.Poe.sendUserMessage(prompt, {
+                            handler: handlerId,
+                            stream: false,
+                            openChat: false
+                        }).catch(error => {
+                            reject(error);
+                        });
+                    });
+                } catch (error) {
+                    console.error("Error in evaluateShortAnswer:", error);
+                    return { success: false };
+                }
+            }
+            
+            // Timer functions
+           
+</html>
